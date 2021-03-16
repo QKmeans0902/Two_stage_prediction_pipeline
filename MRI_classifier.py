@@ -8,14 +8,15 @@ from sklearn.metrics import confusion_matrix
 from Utils import *
 from Model import FeatureReduction
 
-
-n_train = 10000
-h_units = [128, 32, 4, 1]
-dpath = 'path/storing/your/features/and/labels/files'
+"""----------------------User Configuration----------------------"""
+n_train = 10000 # time of stacked autoecoders trainging for meidan weight and bias
+h_units = [128, 32, 4, 1] # number of units in each hidden layer
+fpath = 'path/storing/your/features/labels/files'
+lpath = 'path/storing/your/features/labels/files'
 feature_npath = 'path/of/feature/name/files'
 
-x = np.loadtxt(osp.join(dpath, 'features.txt'), delimiter=',')
-y = np.squeeze(np.genfromtxt(osp.join(dpath, 'labels.txt')))
+x = np.loadtxt(fpath), delimiter='\t')
+y = np.squeeze(np.genfromtxt(lpath)))
 skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=101)
 nested_skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=101)
 fold_contribution = np.zeros((x.shape[1], skf.n_splits))

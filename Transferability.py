@@ -9,8 +9,9 @@ from utils import *
 from model import FeatureReduction
 
 
-n_train = 10000
-h_units = [128, 32, 4, 1]
+"""----------------------User Configuration----------------------"""
+n_train = 10000 # time of stacked autoecoders trainging for meidan weight and bias
+h_units = [128, 32, 4, 1] # number of units in each hidden layer
 fpath = 'path/storing/your/features/labels/files'
 lpath = 'path/storing/your/features/labels/files'
 gpath = 'path/storing/files/indicating/treatment/group'

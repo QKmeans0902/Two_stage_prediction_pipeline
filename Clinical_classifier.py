@@ -6,16 +6,16 @@ from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import confusion_matrix
 from imblearn.over_sampling import SMOTE
 
-dpath = 'C:/Users/dell/Desktop/MM_pred/Data'
+"""----------------------User Configuration----------------------"""
+fpath = 'path/storing/your/features/labels/files'
+lpath = 'path/storing/your/features/labels/files'
 
-x = np.loadtxt(osp.join(dpath, 'YMRS_L_BL1W.txt'))
+x = np.loadtxt(fpath)
 if x.ndim < 2:
     x = x.reshape(-1, 1)
-y = np.squeeze(np.genfromtxt(osp.join(dpath, 'label_L.txt')))
+y = np.squeeze(np.genfromtxt(lpath))
 skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=101)
 nested_skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=101)
-smo = SMOTE(random_state=54)
-x, y = smo.fit_resample(x, y)
 eval_metrics = np.zeros((skf.n_splits, 3))
 
 for n_fold, (train, test) in enumerate(skf.split(x, y)):
