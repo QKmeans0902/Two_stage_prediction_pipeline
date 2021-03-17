@@ -1,12 +1,11 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 import torch
 import torch.nn.functional as F
 from torch import optim
 from torch import nn
 
-from model import AutoEncoderLayer
+from Model import AutoEncoderLayer
 
 
 def binarization(x_1, x_2, y_1):
@@ -38,7 +37,7 @@ def sae_config(x, h_units):
     return sae
 
 
-def sae_pretraining(x, h_units, n_train=10000):
+def sae_pretraining(x, h_units, n_train):
     total_ae_weights = []
     total_ae_biases = []
     for n in range(n_train):
@@ -88,10 +87,9 @@ def median_init(nested_list):
     return m_params
 
 
-def train(model, optimizer, x, y, n_epochs=500):
+def train_nn(model, optimizer, x, y, n_epochs=500):
     x = assert_tensor(x)
     y = assert_tensor(y)
-    total_loss = []
     model.train()
     for epoch in range(n_epochs):
         nn_pred = torch.squeeze(model(x))
@@ -99,10 +97,6 @@ def train(model, optimizer, x, y, n_epochs=500):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        total_loss.append(loss)
-    plt.plot(range(n_epochs), total_loss)
-    plt.xlabel('Epoch')
-    plt.ylabel('BCE loss')
     return model.get_nn_weights()
 
 

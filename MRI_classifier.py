@@ -1,6 +1,5 @@
 import xlrd
 import pandas as pd
-import os.path as osp
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.metrics import confusion_matrix
@@ -11,12 +10,13 @@ from Model import FeatureReduction
 """----------------------User Configuration----------------------"""
 n_train = 10000 # time of stacked autoecoders trainging for meidan weight and bias
 h_units = [128, 32, 4, 1] # number of units in each hidden layer
-fpath = 'path/storing/your/features/labels/files'
-lpath = 'path/storing/your/features/labels/files'
-feature_npath = 'path/of/feature/name/files'
+fpath = 'path/storing/your/features/files(.txt)'
+lpath = 'path/storing/your/labels/files(.txt)'
+opath = 'path/output/results/of/feature/contribution'
+feature_npath = 'path/of/feature/name/files(.xls)'
 
-x = np.loadtxt(fpath), delimiter='\t')
-y = np.squeeze(np.genfromtxt(lpath)))
+x = np.loadtxt(fpath, delimiter='\t')
+y = np.squeeze(np.genfromtxt(lpath))
 skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=101)
 nested_skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=101)
 fold_contribution = np.zeros((x.shape[1], skf.n_splits))
@@ -28,21 +28,21 @@ for n_fold, (train, test) in enumerate(skf.split(x, y)):
     x_train, x_test = x[train], x[test]
     y_train, y_test = y[train], y[test]
     x_train_bin, x_test_bin = binarization(x_train, x_test, y_train)
-    total_AE_weight, total_AE_bias = sae_pretraining(x_train_bin, h_units)
+    total_AE_weight, total_AE_bias = sae_pretraining(x_train_bin, h_units, n_train)
     median_weight, median_bias = median_init(total_AE_weight), median_init(total_AE_bias)
 
     """Training Feed Forward Network"""
     fr_nn = FeatureReduction(x_train_bin.shape[0], h_units, median_weight, median_bias)
     optimizer = optim.Adam(fr_nn.parameters(), lr=0.01)
-    nn_weights = train(fr_nn, optimizer, x_train_bin, y_train)
+    nn_weights = train_nn(fr_nn, optimizer, x_train_bin, y_train)
     ldc_train, ldc_test = nn_ldc(fr_nn, x_train_bin), nn_ldc(fr_nn, x_test_bin)
 
     """SVM classifier"""
     svm_init = SVC(kernel='linear')
     grid = GridSearchCV(svm_init, {'C': np.logspace(-3, 4, 8)}, cv=nested_skf, scoring='balanced_accuracy', n_jobs=5)
-    grid.fit(ldc_train, ldc_train)
+    grid.fit(ldc_train, y_train)
     svm = SVC(C=grid.best_params_['C'], kernel='linear')
-    svm.fit(ldc_train, ldc_train)
+    svm.fit(ldc_train, y_train)
     y_pred = svm.predict(ldc_test)
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
     fold_sensitivity = tp / (tp + fn)
@@ -77,7 +77,7 @@ region_list = xlrd.open_workbook(feature_npath).sheet_by_index(0)
 average_contribution = np.mean(fold_contribution, axis=1)
 top_order = np.argsort(-average_contribution)
 top10_ind = top_order[:10]
-with open(dpath + '/top10.txt', 'w+') as top10:
+with open(opath + '/top10.txt', 'w+') as top10:
     for index in top10_ind:
         top10.write(region_list.cell(index, 0).value + '\n')
 

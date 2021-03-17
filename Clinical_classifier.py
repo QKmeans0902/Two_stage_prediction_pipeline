@@ -4,13 +4,13 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import confusion_matrix
-from imblearn.over_sampling import SMOTE
+
 
 """----------------------User Configuration----------------------"""
-fpath = 'path/storing/your/features/labels/files'
-lpath = 'path/storing/your/features/labels/files'
+fpath = 'path/storing/your/features/files(.txt)'
+lpath = 'path/storing/your/labels/files(.txt)'
 
-x = np.loadtxt(fpath)
+x = np.loadtxt(fpath, delimiter='\t')
 if x.ndim < 2:
     x = x.reshape(-1, 1)
 y = np.squeeze(np.genfromtxt(lpath))
@@ -37,7 +37,7 @@ for n_fold, (train, test) in enumerate(skf.split(x, y)):
 
 df = pd.DataFrame(eval_metrics)
 df.columns = ['SEN', 'SPE', 'BAC']
-df.index = ['Time_' + str(i + 1) for i in range(10)]
+df.index = ['Fold_' + str(i + 1) for i in range(skf.n_splits)]
 print(df)
 print('\nAverage Sensitivity: %.4f±%.4f' % (eval_metrics[:, 0].mean(), eval_metrics[:, 0].std()))
 print('Average Specificity: %.4f±%.4f' % (eval_metrics[:, 1].mean(), eval_metrics[:, 1].std()))
