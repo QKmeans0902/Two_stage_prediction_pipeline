@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.metrics import confusion_matrix
+from imblearn.over_sampling import SMOTE
 
 from Utils import *
 from Model import FeatureReduction
@@ -23,10 +24,14 @@ fold_contribution = np.zeros((x.shape[1], skf.n_splits))
 eval_metrics = np.zeros((skf.n_splits, 3))
 
 for n_fold, (train, test) in enumerate(skf.split(x, y)):
+   
+    """SMOTE"""
+    x_train_imb, x_test = x[train], x[test]
+    y_train_imb, y_test = y[train], y[test]
+    smo = SMOTE(random_state=99)
+    x_train, y_train = smo.fit_resample(x_train_imb, y_train_imb)
 
     """Binary processing and pre-training SAE"""
-    x_train, x_test = x[train], x[test]
-    y_train, y_test = y[train], y[test]
     x_train_bin, x_test_bin = binarization(x_train, x_test, y_train)
     total_AE_weight, total_AE_bias = sae_pretraining(x_train_bin, h_units, n_train)
     median_weight, median_bias = median_init(total_AE_weight), median_init(total_AE_bias)
